@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CalcML — Calculadora Mercado Livre</title>
+<link rel="icon" href="./favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="./favicon.png">
+<style>
+:root {
+  --ml-yellow: #fff159;
+  --ml-blue: #3483fa;
+  --ml-blue-hover: #2968c8;
+  --ml-dark: #1a1a2e;
+  --bg: #f5f5f5;
+  --surface: #ffffff;
+  --surface-alt: #fafafa;
+  --text: #333333;
+  --text-sec: #666666;
+  --text-muted: #999999;
+  --border: #e0e0e0;
+  --border-strong: #cccccc;
+  --green: #00a650;
+  --green-bg: #e8f8ef;
+  --red: #d03b3b;
+  --red-bg: #fdeaea;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; min-height: 100vh; }
+
+/* SCREENS */
+.screen { display: none; }
+.screen.active { display: flex; }
+.screen-block.active { display: block; }
+
+/* CONFIG SCREEN */
+.config-wrapper { min-height: 100vh; align-items: center; justify-content: center; padding: 20px; background: linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 100%); }
+.config-card { background: var(--surface); border-radius: var(--radius-lg); padding: 40px 32px; width: 100%; max-width: 480px; box-shadow: var(--shadow-md); }
+.config-card h1 { font-size: 20px; font-weight: 700; color: var(--ml-dark); margin-bottom: 4px; text-align: center; }
+.config-card .subtitle { font-size: 13px; color: var(--text-sec); margin-bottom: 24px; text-align: center; }
+.config-card .hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.config-card .hint code { background: #f0f0f0; padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+.config-steps { background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 20px; font-size: 13px; color: var(--text-sec); line-height: 1.7; }
+.config-steps strong { color: var(--text); }
+
+/* AUTH SCREEN */
+.auth-wrapper { min-height: 100vh; align-items: center; justify-content: center; padding: 20px; background: linear-gradient(135deg, var(--ml-yellow) 0%, #ffe74c 100%); }
+.auth-card { background: var(--surface); border-radius: var(--radius-lg); padding: 40px 32px; width: 100%; max-width: 400px; box-shadow: var(--shadow-md); }
+.auth-logo { text-align: center; margin-bottom: 28px; }
+.auth-logo img { width: 64px; height: 64px; margin-bottom: 12px; border-radius: 12px; }
+.auth-logo h1 { font-size: 24px; font-weight: 700; color: var(--ml-dark); }
+.auth-logo p { font-size: 14px; color: var(--text-sec); margin-top: 4px; }
+.auth-note { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 16px; }
+.auth-reset { text-align: center; margin-top: 12px; }
+.auth-reset a { font-size: 12px; color: var(--text-muted); cursor: pointer; text-decoration: underline; }
+
+/* SHARED FORM */
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 13px; font-weight: 500; color: var(--text-sec); margin-bottom: 6px; }
+.field input, .field select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; transition: border-color 0.2s; background: var(--surface); color: var(--text); }
+.field input:focus { outline: none; border-color: var(--ml-blue); box-shadow: 0 0 0 3px rgba(52,131,250,0.15); }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 500px) { .form-grid { grid-template-columns: 1fr; } }
+
+.btn-full { width: 100%; padding: 12px; background: var(--ml-blue); color: #fff; border: none; border-radius: var(--radius); font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+.btn-full:hover { background: var(--ml-blue-hover); }
+.btn-full:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-full.gray { background: #666; }
+.btn-full.gray:hover { background: #555; }
+
+.alert { padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 16px; display: none; }
+.alert.error { background: var(--red-bg); color: var(--red); }
+.alert.success { background: var(--green-bg); color: var(--green); }
+
+/* APP */
+.app-wrapper { display: none; }
+.topbar { background: var(--ml-yellow); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-left img { width: 32px; height: 32px; border-radius: 6px; }
+.topbar-title { font-size: 18px; font-weight: 700; color: var(--ml-dark); }
+.topbar-sub { font-size: 12px; color: #666; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.topbar-email { font-size: 13px; color: #555; }
+.btn-logout { padding: 6px 14px; background: rgba(0,0,0,0.08); border: none; border-radius: var(--radius); font-size: 13px; cursor: pointer; color: #333; }
+.btn-logout:hover { background: rgba(0,0,0,0.15); }
+
+.container { max-width: 960px; margin: 0 auto; padding: 20px; }
+
+.tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 2px solid var(--border); }
+.tab { padding: 12px 20px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: none; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+.tab.active { color: var(--ml-blue); border-bottom-color: var(--ml-blue); }
+.tab:hover:not(.active) { color: var(--text); }
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); }
+.card-title { font-size: 14px; font-weight: 600; color: var(--text-sec); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.card .field label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-muted); margin-bottom: 4px; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.result-box { background: var(--surface-alt); border-radius: var(--radius); padding: 14px; border: 1px solid var(--border); }
+.result-box.wide { grid-column: 1 / -1; }
+.result-box .r-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
+.result-box .r-value { font-size: 22px; font-weight: 700; }
+.r-value.blue { color: var(--ml-blue); }
+.r-value.green { color: var(--green); }
+.r-value.red { color: var(--red); }
+
+.summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; border-bottom: 1px solid var(--border); }
+.summary-row:last-child { border-bottom: none; }
+.sr-label { color: var(--text-sec); }
+.sr-val { font-weight: 600; }
+.summary-total { border-top: 2px solid var(--text); margin-top: 4px; padding-top: 10px; }
+
+.actions-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.btn-primary { padding: 10px 20px; background: var(--ml-blue); color: #fff; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+.btn-primary:hover { background: var(--ml-blue-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { padding: 10px 20px; background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.btn-secondary:hover { background: var(--surface-alt); }
+.btn-danger { padding: 8px 16px; background: var(--surface); color: var(--red); border: 1px solid #e5a0a0; border-radius: var(--radius); font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+.btn-danger:hover { background: var(--red-bg); }
+
+.product-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 20px; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow-sm); }
+.product-item:hover { border-color: var(--ml-blue); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.product-header { display: flex; justify-content: space-between; align-items: center; }
+.product-name { font-size: 15px; font-weight: 600; }
+.product-price { font-size: 16px; color: var(--ml-blue); font-weight: 700; }
+.product-tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.tag { font-size: 11px; padding: 3px 10px; border-radius: 99px; font-weight: 500; }
+.tag-blue { background: #eaf2ff; color: var(--ml-blue); }
+.tag-green { background: var(--green-bg); color: var(--green); }
+.tag-gray { background: #f0f0f0; color: #666; }
+
+.products-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; display: block; }
+
+.metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+@media (max-width: 700px) { .metrics-row { grid-template-columns: repeat(2, 1fr); } }
+.metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; text-align: center; box-shadow: var(--shadow-sm); }
+.metric-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.metric-value { font-size: 22px; font-weight: 700; margin-top: 4px; }
+
+.chart-wrap { position: relative; height: 260px; margin-top: 12px; }
+
+.spinner { display: inline-block; width: 20px; height: 20px; border: 2.5px solid #ddd; border-top-color: var(--ml-blue); border-radius: 50%; animation: spin 0.6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; flex-direction: column; gap: 12px; }
+.loading-overlay .lo-text { font-size: 14px; color: var(--text-sec); }
+.toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: var(--radius); font-size: 14px; font-weight: 500; z-index: 1001; transform: translateY(80px); opacity: 0; transition: all 0.3s; box-shadow: var(--shadow-md); }
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { background: var(--green); color: #fff; }
+.toast.error { background: var(--red); color: #fff; }
+</style>
+</head>
+<body>
+
+<!-- SCREEN 1: CONFIG (first-time setup) -->
+<div class="config-wrapper screen" id="configScreen">
+  <div class="config-card">
+    <h1>🔧 Configuração inicial</h1>
+    <p class="subtitle">Conecte ao seu Supabase (só precisa fazer uma vez)</p>
+    <div class="config-steps">
+      <strong>Onde encontrar esses dados:</strong><br>
+      No Supabase → Settings → API<br>
+      • <strong>Project URL</strong> — algo como <code>https://xyz.supabase.co</code><br>
+      • <strong>anon public key</strong> — começa com <code>eyJ...</code>
+    </div>
+    <div class="alert error" id="configError"></div>
+    <div class="field"><label>Project URL</label><input type="url" id="cfgUrl" placeholder="https://seuprojeto.supabase.co"></div>
+    <div class="field"><label>Anon Key (public)</label><input type="text" id="cfgKey" placeholder="eyJhbGciOi..."></div>
+    <button class="btn-full gray" onclick="saveConfig()" id="cfgBtn">Salvar e continuar</button>
+    <p style="font-size:11px; color:var(--text-muted); margin-top:14px; text-align:center;">Esses dados ficam salvos apenas no navegador deste dispositivo. Nada é enviado para terceiros.</p>
+  </div>
+</div>
+
+<!-- SCREEN 2: LOGIN -->
+<div class="auth-wrapper screen" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <img src="./favicon.png" alt="CalcML" onerror="this.style.display='none'">
+      <h1>CalcML</h1>
+      <p>Calculadora de precificação para Mercado Livre</p>
+    </div>
+    <div class="alert error" id="authError"></div>
+    <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="seu@email.com"></div>
+    <div class="field"><label>Senha</label><input type="password" id="loginPassword" placeholder="Sua senha"></div>
+    <button class="btn-full" onclick="doLogin()" id="loginBtn">Entrar</button>
+    <div class="auth-note">Acesso restrito ao administrador</div>
+    <div class="auth-reset"><a onclick="resetConfig()">Reconfigurar conexão</a></div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay" style="display:none">
+  <div class="spinner"></div>
+  <div class="lo-text">Carregando seus dados...</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- SCREEN 3: APP -->
+<div class="app-wrapper" id="appWrapper">
+  <div class="topbar">
+    <div class="topbar-left">
+      <img src="./favicon.png" alt="CalcML" onerror="this.style.display='none'">
+      <div>
+        <div class="topbar-title">CalcML</div>
+        <div class="topbar-sub">Calculadora Mercado Livre</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-email" id="userEmail"></span>
+      <button class="btn-logout" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('calc')">⚡ Cálculo rápido</button>
+      <button class="tab" onclick="switchTab('products')">📦 Meus produtos</button>
+    </div>
+
+    <!-- CALC -->
+    <div class="panel active" id="panel-calc">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">⚙️ Dados do produto</div>
+          <div class="field"><label>Custo do produto (R$)</label><input type="number" id="c_custo" value="50" step="0.01" oninput="calcQuick()"></div>
+          <div class="field"><label>Frete ML (R$)</label><input type="number" id="c_frete" value="20" step="0.01" oninput="calcQuick()"></div>
+          <div class="field"><label>Embalagem (R$)</label><input type="number" id="c_emb" value="2" step="0.01" oninput="calcQuick()"></div>
+          <div class="form-grid">
+            <div class="field"><label>Taxa ML (%)</label><input type="number" id="c_taxa" value="16" step="0.1" oninput="calcQuick()"></div>
+            <div class="field"><label>Imposto (%)</label><input type="number" id="c_imp" value="5" step="0.1" oninput="calcQuick()"></div>
+          </div>
+          <div class="field"><label>Margem desejada (%)</label><input type="number" id="c_margem" value="15" step="0.1" oninput="calcQuick()"></div>
+          <div class="field"><label>Qtd. vendas / mês</label><input type="number" id="c_qtd" value="30" step="1" oninput="calcQuick()"></div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title">📊 Resultado</div>
+            <div class="result-grid">
+              <div class="result-box wide"><div class="r-label">Preço de venda sugerido</div><div class="r-value blue" id="r_preco">R$ 0,00</div></div>
+              <div class="result-box"><div class="r-label">Lucro por item</div><div class="r-value green" id="r_lucro_item">R$ 0,00</div></div>
+              <div class="result-box"><div class="r-label">Margem real</div><div class="r-value" id="r_margem_real">0%</div></div>
+              <div class="result-box"><div class="r-label">Faturamento mensal</div><div class="r-value blue" id="r_fat">R$ 0,00</div></div>
+              <div class="result-box"><div class="r-label">Lucro mensal</div><div class="r-value green" id="r_lucro_mes">R$ 0,00</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">📋 Decomposição do preço</div>
+            <div id="decomp"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">🔄 Simulador reverso — descubra a margem real</div>
+        <div class="grid-2">
+          <div>
+            <div class="field"><label>Preço de venda (R$)</label><input type="number" id="rv_preco" value="112.50" step="0.01" oninput="calcReverse()"></div>
+            <div class="form-grid">
+              <div class="field"><label>Custo (R$)</label><input type="number" id="rv_custo" value="50" step="0.01" oninput="calcReverse()"></div>
+              <div class="field"><label>Frete (R$)</label><input type="number" id="rv_frete" value="20" step="0.01" oninput="calcReverse()"></div>
+              <div class="field"><label>Embalagem (R$)</label><input type="number" id="rv_emb" value="2" step="0.01" oninput="calcReverse()"></div>
+              <div class="field"><label>Taxa ML (%)</label><input type="number" id="rv_taxa" value="16" step="0.1" oninput="calcReverse()"></div>
+              <div class="field"><label>Imposto (%)</label><input type="number" id="rv_imp" value="5" step="0.1" oninput="calcReverse()"></div>
+            </div>
+          </div>
+          <div>
+            <div class="result-grid">
+              <div class="result-box wide"><div class="r-label">Margem real</div><div class="r-value" id="rv_margem">0%</div></div>
+              <div class="result-box"><div class="r-label">Lucro por item</div><div class="r-value green" id="rv_lucro">R$ 0,00</div></div>
+              <div class="result-box"><div class="r-label">Repasse ML (você recebe)</div><div class="r-value blue" id="rv_repasse">R$ 0,00</div></div>
+              <div class="result-box"><div class="r-label">Descontos ML</div><div class="r-value red" id="rv_descontos">R$ 0,00</div></div>
+              <div class="result-box"><div class="r-label">Custos totais</div><div class="r-value red" id="rv_custos">R$ 0,00</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="panel" id="panel-products">
+      <div class="actions-bar">
+        <button class="btn-primary" onclick="openAddForm()">＋ Novo produto</button>
+      </div>
+
+      <div id="addForm" style="display:none; margin-bottom:16px;">
+        <div class="card">
+          <div class="card-title">➕ Novo produto</div>
+          <div class="field"><label>Nome do produto</label><input type="text" id="new_name" placeholder="Ex: Capinha iPhone 15 Pro"></div>
+          <div class="form-grid">
+            <div class="field"><label>Custo (R$)</label><input type="number" id="new_custo" value="50" step="0.01"></div>
+            <div class="field"><label>Frete ML (R$)</label><input type="number" id="new_frete" value="20" step="0.01"></div>
+            <div class="field"><label>Embalagem (R$)</label><input type="number" id="new_emb" value="2" step="0.01"></div>
+            <div class="field"><label>Taxa ML (%)</label><input type="number" id="new_taxa" value="16" step="0.1"></div>
+            <div class="field"><label>Imposto (%)</label><input type="number" id="new_imp" value="5" step="0.1"></div>
+            <div class="field"><label>Margem desejada (%)</label><input type="number" id="new_margem" value="15" step="0.1"></div>
+            <div class="field"><label>Vendas/mês estimadas</label><input type="number" id="new_qtd" value="30" step="1"></div>
+          </div>
+          <div style="display:flex; gap:10px; margin-top:16px;">
+            <button class="btn-primary" onclick="addProduct()" id="addBtn">Adicionar</button>
+            <button class="btn-secondary" onclick="closeAddForm()">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="productsContainer">
+        <div class="empty-state" id="emptyState">
+          <span class="empty-icon">📦</span>
+          Nenhum produto cadastrado.<br>Adicione seu primeiro produto.
+        </div>
+        <div class="products-list" id="productsList"></div>
+      </div>
+
+      <div id="detailView" style="display:none">
+        <button class="btn-secondary" onclick="closeDetail()" style="margin-bottom:16px">← Voltar à lista</button>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">✏️ Editar produto</div>
+            <div class="field"><label>Nome</label><input type="text" id="pd_name"></div>
+            <div class="form-grid">
+              <div class="field"><label>Custo (R$)</label><input type="number" id="pd_custo" step="0.01" oninput="liveDetailCalc()"></div>
+              <div class="field"><label>Frete (R$)</label><input type="number" id="pd_frete" step="0.01" oninput="liveDetailCalc()"></div>
+              <div class="field"><label>Embalagem (R$)</label><input type="number" id="pd_emb" step="0.01" oninput="liveDetailCalc()"></div>
+              <div class="field"><label>Taxa ML (%)</label><input type="number" id="pd_taxa" step="0.1" oninput="liveDetailCalc()"></div>
+              <div class="field"><label>Imposto (%)</label><input type="number" id="pd_imp" step="0.1" oninput="liveDetailCalc()"></div>
+              <div class="field"><label>Margem (%)</label><input type="number" id="pd_margem" step="0.1" oninput="liveDetailCalc()"></div>
+              <div class="field"><label>Vendas/mês</label><input type="number" id="pd_qtd" step="1" oninput="liveDetailCalc()"></div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:16px;">
+              <button class="btn-primary" onclick="saveProduct()" id="saveBtn">Salvar alterações</button>
+              <button class="btn-danger" onclick="deleteProduct()">🗑 Excluir</button>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-title">📊 Resultado do produto</div>
+              <div class="result-grid">
+                <div class="result-box wide"><div class="r-label">Preço de venda</div><div class="r-value blue" id="pd_preco_r">R$ 0,00</div></div>
+                <div class="result-box"><div class="r-label">Lucro/item</div><div class="r-value green" id="pd_lucro_r">R$ 0,00</div></div>
+                <div class="result-box"><div class="r-label">Margem real</div><div class="r-value" id="pd_margem_r">0%</div></div>
+                <div class="result-box"><div class="r-label">Faturamento/mês</div><div class="r-value blue" id="pd_fat_r">R$ 0,00</div></div>
+                <div class="result-box"><div class="r-label">Lucro/mês</div><div class="r-value green" id="pd_lucro_mes_r">R$ 0,00</div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title">📋 Decomposição</div>
+              <div id="pd_decomp"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="dashboard" style="display:none; margin-top:20px;">
+        <div class="metrics-row">
+          <div class="metric-card"><div class="metric-label">Produtos</div><div class="metric-value" id="dash_total">0</div></div>
+          <div class="metric-card"><div class="metric-label">Fat. mensal</div><div class="metric-value" id="dash_fat" style="color:var(--ml-blue)">R$ 0</div></div>
+          <div class="metric-card"><div class="metric-label">Lucro mensal</div><div class="metric-value" id="dash_lucro" style="color:var(--green)">R$ 0</div></div>
+          <div class="metric-card"><div class="metric-label">Margem média</div><div class="metric-value" id="dash_margem">0%</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📊 Lucro por produto</div>
+          <div class="chart-wrap"><canvas id="dashChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<script>
+let sb = null;
+let currentUser = null;
+let products = [];
+let selectedId = null;
+let dashChart = null;
+
+// ============================================================
+// CONFIG — localStorage (nenhuma key no código-fonte)
+// ============================================================
+function getConfig() {
+  try {
+    const c = JSON.parse(localStorage.getItem('calcml_config'));
+    return (c && c.url && c.key) ? c : null;
+  } catch { return null; }
+}
+
+function saveConfig() {
+  const url = document.getElementById('cfgUrl').value.trim().replace(/\/+$/, '');
+  const key = document.getElementById('cfgKey').value.trim();
+  if (!url || !url.startsWith('https://')) { showAlert('configError', 'Insira uma URL válida começando com https://'); return; }
+  if (!key || key.length < 30) { showAlert('configError', 'A anon key parece muito curta. Copie a key completa.'); return; }
+
+  const btn = document.getElementById('cfgBtn');
+  btn.disabled = true; btn.textContent = 'Verificando...';
+
+  // Test connection
+  const testSb = window.supabase.createClient(url, key);
+  testSb.auth.getSession().then(({ error }) => {
+    btn.disabled = false; btn.textContent = 'Salvar e continuar';
+    if (error) { showAlert('configError', 'Falha ao conectar: ' + error.message); return; }
+    localStorage.setItem('calcml_config', JSON.stringify({ url, key }));
+    showScreen('authScreen');
+    initSupabase();
+  }).catch(err => {
+    btn.disabled = false; btn.textContent = 'Salvar e continuar';
+    showAlert('configError', 'Erro de conexão. Verifique a URL.');
+  });
+}
+
+function resetConfig() {
+  if (confirm('Isso vai apagar a conexão salva. Você precisará inserir a URL e key novamente. Continuar?')) {
+    localStorage.removeItem('calcml_config');
+    showScreen('configScreen');
+  }
+}
+
+function initSupabase() {
+  const c = getConfig();
+  if (!c) return false;
+  sb = window.supabase.createClient(c.url, c.key);
+  return true;
+}
+
+// ============================================================
+// SCREEN MANAGEMENT
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showAlert(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function fmt(v) { return 'R$ ' + v.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+
+// ============================================================
+// AUTH
+// ============================================================
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!email || !password) { showAlert('authError', 'Preencha email e senha.'); return; }
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.textContent = 'Entrando...';
+  document.getElementById('authError').style.display = 'none';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  btn.disabled = false; btn.textContent = 'Entrar';
+
+  if (error) {
+    const msg = error.message.includes('Invalid login') ? 'Email ou senha incorretos.' : error.message;
+    showAlert('authError', msg);
+    return;
+  }
+  currentUser = data.user;
+  enterApp();
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  currentUser = null;
+  products = [];
+  document.getElementById('appWrapper').style.display = 'none';
+  showScreen('authScreen');
+}
+
+async function enterApp() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('loadingOverlay').style.display = 'flex';
+  document.getElementById('userEmail').textContent = currentUser.email;
+  await loadProducts();
+  document.getElementById('loadingOverlay').style.display = 'none';
+  document.getElementById('appWrapper').style.display = 'block';
+  calcQuick();
+  calcReverse();
+}
+
+// ============================================================
+// DATABASE
+// ============================================================
+async function loadProducts() {
+  const { data, error } = await sb.from('products').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: true });
+  if (error) {
+    console.error('Load error:', error);
+    if (error.code === '42P01' || error.message.includes('does not exist')) {
+      showToast('Tabela "products" não encontrada. Execute o SQL no Supabase.', 'error');
+    }
+    products = [];
+    return;
+  }
+  products = data || [];
+}
+
+async function dbInsert(p) {
+  const { data, error } = await sb.from('products').insert({ user_id: currentUser.id, name: p.name, custo: p.custo, frete: p.frete, embalagem: p.embalagem, taxa_ml: p.taxa_ml, imposto: p.imposto, margem: p.margem, qtd_vendas: p.qtd_vendas }).select().single();
+  if (error) { showToast('Erro ao salvar: ' + error.message, 'error'); return null; }
+  return data;
+}
+
+async function dbUpdate(id, fields) {
+  fields.updated_at = new Date().toISOString();
+  const { error } = await sb.from('products').update(fields).eq('id', id).eq('user_id', currentUser.id);
+  if (error) { showToast('Erro ao atualizar: ' + error.message, 'error'); return false; }
+  return true;
+}
+
+async function dbDelete(id) {
+  const { error } = await sb.from('products').delete().eq('id', id).eq('user_id', currentUser.id);
+  if (error) { showToast('Erro ao excluir: ' + error.message, 'error'); return false; }
+  return true;
+}
+
+// ============================================================
+// CALC ENGINE
+// ============================================================
+function calcPrice(custo, frete, emb, taxaPct, impPct, margemPct) {
+  const taxa = taxaPct / 100, imp = impPct / 100, margem = margemPct / 100;
+  const denom = 1 - taxa - imp - margem;
+  if (denom <= 0) return null;
+  const preco = (custo + frete + emb) / denom;
+  return { preco, lucroItem: preco * margem, taxaVal: preco * taxa, impVal: preco * imp, custo, frete, emb };
+}
+
+function calcMargemReal(preco, custo, frete, emb, taxaPct, impPct) {
+  const taxa = taxaPct / 100, imp = impPct / 100;
+  const descontosML = (taxa * preco) + frete + (imp * preco);
+  const lucro = preco - descontosML - custo - emb;
+  return { lucro, margem: preco > 0 ? lucro / preco : 0, descontosML, custos: custo + emb + (imp * preco), repasse: preco - descontosML };
+}
+
+function buildDecomp(el, r) {
+  if (!r) { el.innerHTML = '<div style="color:var(--text-muted);font-size:13px">Margem impossível — soma das taxas >= 100%</div>'; return; }
+  const rows = [['Custo produto', fmt(r.custo)], ['Frete ML', fmt(r.frete)], ['Embalagem', fmt(r.emb)],
+    ['Taxa ML (' + (r.taxaVal / r.preco * 100).toFixed(1) + '%)', fmt(r.taxaVal)],
+    ['Imposto (' + (r.impVal / r.preco * 100).toFixed(1) + '%)', fmt(r.impVal)],
+    ['Lucro (margem)', fmt(r.lucroItem)]];
+  el.innerHTML = rows.map(([l, v]) => `<div class="summary-row"><span class="sr-label">${l}</span><span class="sr-val">${v}</span></div>`).join('') +
+    `<div class="summary-row summary-total"><span class="sr-label" style="font-weight:600">Preço de venda</span><span class="sr-val" style="color:var(--ml-blue);font-size:15px">${fmt(r.preco)}</span></div>`;
+}
+
+function calcQuick() {
+  const v = id => +(document.getElementById(id).value) || 0;
+  const r = calcPrice(v('c_custo'), v('c_frete'), v('c_emb'), v('c_taxa'), v('c_imp'), v('c_margem'));
+  const qtd = v('c_qtd');
+  if (!r) { document.getElementById('r_preco').textContent = 'Impossível'; return; }
+  document.getElementById('r_preco').textContent = fmt(r.preco);
+  document.getElementById('r_lucro_item').textContent = fmt(r.lucroItem);
+  document.getElementById('r_margem_real').textContent = v('c_margem').toFixed(1) + '%';
+  document.getElementById('r_fat').textContent = fmt(r.preco * qtd);
+  document.getElementById('r_lucro_mes').textContent = fmt(r.lucroItem * qtd);
+  buildDecomp(document.getElementById('decomp'), r);
+}
+
+function calcReverse() {
+  const v = id => +(document.getElementById(id).value) || 0;
+  const r = calcMargemReal(v('rv_preco'), v('rv_custo'), v('rv_frete'), v('rv_emb'), v('rv_taxa'), v('rv_imp'));
+  const mEl = document.getElementById('rv_margem');
+  mEl.textContent = (r.margem * 100).toFixed(1) + '%';
+  mEl.className = 'r-value ' + (r.margem >= 0.10 ? 'green' : r.margem >= 0 ? '' : 'red');
+  document.getElementById('rv_lucro').textContent = fmt(r.lucro);
+  document.getElementById('rv_repasse').textContent = fmt(r.repasse);
+  document.getElementById('rv_descontos').textContent = fmt(r.descontosML);
+  document.getElementById('rv_custos').textContent = fmt(r.custos);
+}
+
+// ============================================================
+// TABS & PRODUCTS
+// ============================================================
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === (tab === 'calc' ? 0 : 1)));
+  document.getElementById('panel-calc').classList.toggle('active', tab === 'calc');
+  document.getElementById('panel-products').classList.toggle('active', tab === 'products');
+  if (tab === 'products') renderProducts();
+}
+
+function openAddForm() { document.getElementById('addForm').style.display = 'block'; document.getElementById('new_name').focus(); }
+function closeAddForm() { document.getElementById('addForm').style.display = 'none'; }
+
+async function addProduct() {
+  const name = document.getElementById('new_name').value.trim();
+  if (!name) { document.getElementById('new_name').focus(); return; }
+  const btn = document.getElementById('addBtn');
+  btn.disabled = true; btn.textContent = 'Salvando...';
+  const inserted = await dbInsert({
+    name, custo: +(document.getElementById('new_custo').value) || 0,
+    frete: +(document.getElementById('new_frete').value) || 0,
+    embalagem: +(document.getElementById('new_emb').value) || 0,
+    taxa_ml: +(document.getElementById('new_taxa').value) || 16,
+    imposto: +(document.getElementById('new_imp').value) || 5,
+    margem: +(document.getElementById('new_margem').value) || 15,
+    qtd_vendas: +(document.getElementById('new_qtd').value) || 1
+  });
+  btn.disabled = false; btn.textContent = 'Adicionar';
+  if (inserted) { products.push(inserted); document.getElementById('new_name').value = ''; closeAddForm(); renderProducts(); showToast('Produto adicionado!', 'success'); }
+}
+
+function renderProducts() {
+  const list = document.getElementById('productsList'), empty = document.getElementById('emptyState'), dash = document.getElementById('dashboard');
+  if (products.length === 0) { list.innerHTML = ''; empty.style.display = 'block'; dash.style.display = 'none'; return; }
+  empty.style.display = 'none'; dash.style.display = 'block';
+  list.innerHTML = products.map(p => {
+    const r = calcPrice(+p.custo, +p.frete, +p.embalagem, +p.taxa_ml, +p.imposto, +p.margem);
+    const preco = r ? r.preco : 0, lucroMes = r ? r.lucroItem * (+p.qtd_vendas) : 0;
+    return `<div class="product-item" onclick="openDetail('${p.id}')"><div class="product-header"><span class="product-name">${esc(p.name)}</span><span class="product-price">${fmt(preco)}</span></div><div class="product-tags"><span class="tag tag-blue">Margem ${(+p.margem).toFixed(0)}%</span><span class="tag tag-green">Lucro/mês ${fmt(lucroMes)}</span><span class="tag tag-gray">${p.qtd_vendas} vendas/mês</span></div></div>`;
+  }).join('');
+  updateDashboard();
+}
+
+function updateDashboard() {
+  let totalFat = 0, totalLucro = 0, totalMargem = 0;
+  const names = [], lucros = [], fats = [];
+  products.forEach(p => {
+    const r = calcPrice(+p.custo, +p.frete, +p.embalagem, +p.taxa_ml, +p.imposto, +p.margem);
+    if (!r) return;
+    const fat = r.preco * (+p.qtd_vendas), luc = r.lucroItem * (+p.qtd_vendas);
+    totalFat += fat; totalLucro += luc; totalMargem += (+p.margem);
+    names.push(p.name.length > 18 ? p.name.slice(0, 17) + '…' : p.name);
+    lucros.push(Math.round(luc * 100) / 100); fats.push(Math.round(fat * 100) / 100);
+  });
+  document.getElementById('dash_total').textContent = products.length;
+  document.getElementById('dash_fat').textContent = fmt(totalFat);
+  document.getElementById('dash_lucro').textContent = fmt(totalLucro);
+  document.getElementById('dash_margem').textContent = products.length > 0 ? (totalMargem / products.length).toFixed(1) + '%' : '0%';
+  if (dashChart) dashChart.destroy();
+  const ctx = document.getElementById('dashChart'); if (!ctx) return;
+  dashChart = new Chart(ctx, { type: 'bar', data: { labels: names, datasets: [
+    { label: 'Faturamento', data: fats, backgroundColor: '#3483fa', borderRadius: 4 },
+    { label: 'Lucro', data: lucros, backgroundColor: '#00a650', borderRadius: 4 }
+  ]}, options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'rectRounded', font: { size: 12 } } }, tooltip: { callbacks: { label: c => c.dataset.label + ': ' + fmt(c.raw) } } },
+    scales: { y: { ticks: { callback: v => 'R$ ' + v.toLocaleString('pt-BR') }, grid: { color: '#eee' } }, x: { ticks: { autoSkip: false, maxRotation: 45 }, grid: { display: false } } }
+  }});
+}
+
+function openDetail(id) {
+  selectedId = id;
+  const p = products.find(x => x.id === id); if (!p) return;
+  document.getElementById('productsContainer').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('addForm').style.display = 'none';
+  document.getElementById('detailView').style.display = 'block';
+  document.getElementById('pd_name').value = p.name;
+  document.getElementById('pd_custo').value = p.custo;
+  document.getElementById('pd_frete').value = p.frete;
+  document.getElementById('pd_emb').value = p.embalagem;
+  document.getElementById('pd_taxa').value = p.taxa_ml;
+  document.getElementById('pd_imp').value = p.imposto;
+  document.getElementById('pd_margem').value = p.margem;
+  document.getElementById('pd_qtd').value = p.qtd_vendas;
+  liveDetailCalc();
+}
+
+function liveDetailCalc() {
+  const v = id => +(document.getElementById(id).value) || 0;
+  const r = calcPrice(v('pd_custo'), v('pd_frete'), v('pd_emb'), v('pd_taxa'), v('pd_imp'), v('pd_margem'));
+  if (!r) return;
+  document.getElementById('pd_preco_r').textContent = fmt(r.preco);
+  document.getElementById('pd_lucro_r').textContent = fmt(r.lucroItem);
+  document.getElementById('pd_margem_r').textContent = v('pd_margem').toFixed(1) + '%';
+  document.getElementById('pd_fat_r').textContent = fmt(r.preco * v('pd_qtd'));
+  document.getElementById('pd_lucro_mes_r').textContent = fmt(r.lucroItem * v('pd_qtd'));
+  buildDecomp(document.getElementById('pd_decomp'), r);
+}
+
+async function saveProduct() {
+  const p = products.find(x => x.id === selectedId); if (!p) return;
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = 'Salvando...';
+  const fields = { name: document.getElementById('pd_name').value.trim() || p.name,
+    custo: +(document.getElementById('pd_custo').value) || 0, frete: +(document.getElementById('pd_frete').value) || 0,
+    embalagem: +(document.getElementById('pd_emb').value) || 0, taxa_ml: +(document.getElementById('pd_taxa').value) || 0,
+    imposto: +(document.getElementById('pd_imp').value) || 0, margem: +(document.getElementById('pd_margem').value) || 0,
+    qtd_vendas: +(document.getElementById('pd_qtd').value) || 0 };
+  const ok = await dbUpdate(selectedId, fields);
+  btn.disabled = false; btn.textContent = 'Salvar alterações';
+  if (ok) { Object.assign(p, fields); liveDetailCalc(); showToast('Produto atualizado!', 'success'); }
+}
+
+async function deleteProduct() {
+  if (!confirm('Tem certeza que quer excluir este produto?')) return;
+  const ok = await dbDelete(selectedId);
+  if (ok) { products = products.filter(x => x.id !== selectedId); showToast('Produto excluído', 'success'); closeDetail(); }
+}
+
+function closeDetail() {
+  document.getElementById('detailView').style.display = 'none';
+  document.getElementById('productsContainer').style.display = 'block';
+  renderProducts();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+  const config = getConfig();
+  if (!config) { showScreen('configScreen'); return; }
+  if (!initSupabase()) { showScreen('configScreen'); return; }
+
+  // Check for existing session
+  const { data: { session } } = await sb.auth.getSession();
+  if (session && session.user) {
+    currentUser = session.user;
+    enterApp();
+  } else {
+    showScreen('authScreen');
+  }
+}
+
+document.getElementById('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('cfgKey').addEventListener('keydown', e => { if (e.key === 'Enter') saveConfig(); });
+
+init();
+</script>
+</body>
+</html>
