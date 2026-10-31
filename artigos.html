@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#fff159">
+<script src="./dados-ml.js"></script>
+<title>CalcML — Artigos</title>
+<link rel="icon" href="./favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="./favicon.png">
+<style>
+:root {
+  --ml-blue: #3483fa;
+  --bg: #f5f5f5;
+  --surface: #ffffff;
+  --surface-alt: #fafafa;
+  --text: #333333;
+  --text-sec: #555555;
+  --text-muted: #888888;
+  --border: #e0e0e0;
+  --green: #00a650;
+  --green-bg: #e8f8ef;
+  --amber-bg: #fff8e1;
+  --amber-border: #f2d77a;
+  --blue-soft: #f3f8ff;
+  --blue-border: #cfe0fb;
+  --topbar-bg: #fff159;
+  --topbar-text: #1a1a2e;
+  --topbar-btn: rgba(0,0,0,0.08);
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --ml-blue: #5c9dff;
+  --bg: #15171c;
+  --surface: #1f2229;
+  --surface-alt: #262a33;
+  --text: #e9eaee;
+  --text-sec: #b3b7c0;
+  --text-muted: #8a909b;
+  --border: #343944;
+  --green: #3ccf7d;
+  --green-bg: #173a27;
+  --amber-bg: #332b14;
+  --amber-border: #6b5a22;
+  --blue-soft: #1c2638;
+  --blue-border: #2f4a75;
+  --topbar-bg: #1b1d22;
+  --topbar-text: #fff159;
+  --topbar-btn: rgba(255,255,255,0.1);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+  color-scheme: dark;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; -webkit-tap-highlight-color: transparent; }
+a { color: var(--ml-blue); }
+
+.topbar { background: var(--topbar-bg); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; position: sticky; top: 0; z-index: 10; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+.topbar-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.topbar-left img { width: 32px; height: 32px; border-radius: 6px; }
+.topbar-title { font-size: 18px; font-weight: 700; color: var(--topbar-text); }
+.topbar-right { display: flex; gap: 8px; flex-shrink: 0; }
+.btn { padding: 6px 12px; background: var(--topbar-btn); border: none; border-radius: var(--radius); font-size: 13px; cursor: pointer; color: var(--topbar-text); text-decoration: none; white-space: nowrap; line-height: 1.5; }
+
+.container { max-width: 820px; margin: 0 auto; padding: 20px 16px 60px; }
+.intro { font-size: 15px; color: var(--text-sec); margin-bottom: 16px; }
+.toc { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 16px 20px; margin-bottom: 20px; }
+.toc h2 { font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 8px; }
+.toc ol { padding-left: 20px; }
+.toc li { margin: 4px 0; }
+
+article { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 22px 24px; margin-bottom: 20px; scroll-margin-top: 70px; }
+article h2 { font-size: 20px; margin-bottom: 10px; }
+article h3 { font-size: 15px; margin: 18px 0 6px; }
+article p { margin: 8px 0; }
+article ul, article ol { padding-left: 22px; margin: 8px 0; }
+article li { margin: 4px 0; }
+.formula { background: var(--blue-soft); border: 1px solid var(--blue-border); border-radius: var(--radius); padding: 12px 14px; font-family: ui-monospace, Consolas, monospace; font-size: 14px; overflow-x: auto; margin: 10px 0; }
+.box { border-radius: var(--radius); padding: 12px 14px; margin: 12px 0; font-size: 14px; }
+.box.ok { background: var(--green-bg); }
+.box.aviso { background: var(--amber-bg); border: 1px solid var(--amber-border); }
+.ex { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0; }
+.ex td { padding: 5px 0; border-bottom: 1px solid var(--border); }
+.ex td:last-child { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; padding-left: 12px; }
+.ex tr.total td { font-weight: 700; border-bottom: none; }
+
+.tabela-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); margin: 10px 0; -webkit-overflow-scrolling: touch; }
+.frete { border-collapse: collapse; font-size: 13px; min-width: 680px; width: 100%; }
+.frete th, .frete td { padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.frete th { background: var(--surface-alt); font-weight: 600; position: sticky; top: 0; }
+.frete th:first-child, .frete td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); }
+.frete th:first-child { background: var(--surface-alt); }
+.frete tr:hover td { background: var(--blue-soft); }
+.legenda { font-size: 12px; color: var(--text-muted); }
+
+@media (max-width: 700px) {
+  .topbar { padding: 10px 16px; }
+  .topbar-title { font-size: 16px; }
+  .hide-sm { display: none; }
+  article { padding: 18px 16px; }
+  article h2 { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <img src="./favicon.png" alt="">
+    <div class="topbar-title">Artigos do CalcML</div>
+  </div>
+  <div class="topbar-right">
+    <a class="btn" href="./">←<span class="hide-sm"> Voltar à calculadora</span></a>
+    <button class="btn" data-tema-btn onclick="CALCML_TEMA.alternar()">🌙</button>
+  </div>
+</header>
+
+<main class="container">
+  <p class="intro">Tudo o que o CalcML usa nas contas, explicado, com os links oficiais do Mercado Livre para você conferir. Os números do frete são de <strong data-frete-data></strong>.</p>
+
+  <nav class="toc">
+    <h2>Nesta página</h2>
+    <ol>
+      <li><a href="#preco">Como o CalcML chega no preço</a></li>
+      <li><a href="#tarifa">Tarifa de venda (a %)</a></li>
+      <li><a href="#frete">Frete (custo dos Envios)</a></li>
+      <li><a href="#imposto">Imposto</a></li>
+      <li><a href="#fora">Custos que o CalcML não conta</a></li>
+      <li><a href="#conferir">Como conferir uma venda</a></li>
+      <li><a href="#fontes">Fontes e atualização</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <article id="preco">
+    <h2>1. Como o CalcML chega no preço</h2>
+    <p>Você diz quanto quer ganhar (a <strong>margem</strong>, em % do preço de venda) e o CalcML acha o preço que paga tudo e ainda sobra essa margem.</p>
+    <div class="formula">Preço = (custo + embalagem + frete) ÷ (1 − tarifa% − imposto% − margem%)</div>
+    <p>A tarifa, o imposto e a margem são porcentagens <strong>do preço de venda</strong>, por isso ficam embaixo, dividindo. O custo, a embalagem e o frete são valores em reais, por isso ficam em cima.</p>
+
+    <h3>Exemplo</h3>
+    <p id="exTexto">Produto de R$ 20,00, embalagem de R$ 2,00, 0,3 kg, anúncio Clássico a 13%, imposto de 6% e margem de 20%:</p>
+    <table class="ex" id="exTabela"></table>
+
+    <h3>Por que o frete muda o preço (e o preço muda o frete)</h3>
+    <p>O frete do ML depende da faixa de preço do anúncio. Então, com o frete automático ligado, o CalcML testa cada faixa (até R$ 18,99, R$ 19 a R$ 48,99, R$ 49 a R$ 78,99...) e fica com o <strong>menor preço que cai dentro da própria faixa</strong>. Por isso às vezes o preço sugerido fica logo abaixo de R$ 79 ou de R$ 49: é ali que o frete fica mais barato.</p>
+
+    <h3>Margem real</h3>
+    <p>No simulador reverso você informa o preço e o CalcML mostra quanto sobra:</p>
+    <div class="formula">Lucro = preço − custo − embalagem − frete − tarifa − imposto<br>Margem real = lucro ÷ preço</div>
+    <p>Se a margem real der negativa, aquele preço dá prejuízo.</p>
+  </article>
+
+  <!-- 2 -->
+  <article id="tarifa">
+    <h2>2. Tarifa de venda (a %)</h2>
+    <p>Anunciar no Mercado Livre é grátis: a tarifa só é cobrada quando vende. Ela depende do <strong>tipo de anúncio</strong> e da <strong>categoria</strong> do produto.</p>
+    <ul>
+      <li><strong>Clássico: entre 10% e 14%</strong>, conforme a categoria. Inclui a tarifa do ML e o custo de cobrar a venda pelo Mercado Pago.</li>
+      <li><strong>Premium: entre 15% e 19%</strong>, conforme a categoria. Inclui o mesmo do Clássico mais o custo de oferecer <strong>parcelamento sem juros</strong> ao comprador.</li>
+    </ul>
+
+    <h3>Desconto entre R$ 150 e R$ 700</h3>
+    <p>Em algumas categorias, produtos de R$ 150 a R$ 700 pagam uma tarifa menor. O desconto vem em pontos percentuais: se a categoria cobra 15% no Premium e o desconto é de 3 pp, a tarifa vira 12%. A lista das categorias está na <a href="https://www.mercadolivre.com.br/ajuda/51251" target="_blank" rel="noopener">ajuda do ML</a>.</p>
+
+    <h3>Kits</h3>
+    <p>Vender em kit não muda a %: a tarifa é a mesma da venda do produto separado (só que sobre o preço do kit).</p>
+
+    <h3>Como o CalcML pega a % ao vivo</h3>
+    <ul>
+      <li>Quando você escolhe a <strong>categoria do ML</strong> e deixa marcado “Pegar a % do ML pela categoria”, o CalcML pergunta ao próprio Mercado Livre, pela API oficial, qual é a tarifa daquela categoria <strong>naquele preço</strong> e naquele tipo de anúncio.</li>
+      <li>Como a % pode mudar com o preço (o desconto de R$ 150 a R$ 700, por exemplo) e o preço muda com a %, ele repete a pergunta até o preço parar de mudar.</li>
+      <li>A conexão com o ML é <strong>só de leitura</strong>: ela consulta a tarifa e mais nada. Não vê nem mexe em anúncios, vendas, mensagens ou dinheiro.</li>
+      <li>Cada resposta fica guardada por até 6 horas, para não perguntar a mesma coisa várias vezes.</li>
+      <li>Se o ML cobrar também um valor fixo por venda, ele aparece somado na linha “Taxa ML” do resultado.</li>
+      <li>Sem categoria escolhida (ou se o ML não responder), vale a % que você digitar no campo.</li>
+      <li>Ao abrir um produto salvo, a % é consultada de novo, então ela fica sempre com a tarifa de hoje.</li>
+    </ul>
+
+    <div class="box ok"><strong>Para conferir:</strong> abra o <a href="https://www.mercadolivre.com.br/simulador-de-custos" target="_blank" rel="noopener">simulador de custos do ML</a>, busque o mesmo produto ou categoria e coloque o mesmo preço. A % do simulador tem que bater com a do CalcML.</div>
+  </article>
+
+  <!-- 3 -->
+  <article id="frete">
+    <h2>3. Frete (custo dos Envios)</h2>
+    <p>Todo produto enviado pelos Envios do Mercado Livre (Full, Coleta ou Agências) paga um custo de envio, <strong>mesmo quando o comprador paga o frete</strong>. O valor sai da venda, direto na conta do Mercado Pago, e aparece no detalhe da venda.</p>
+
+    <h3>O que define o valor</h3>
+    <ul>
+      <li><strong>Peso e medidas</strong> do produto já na embalagem final.</li>
+      <li><strong>Preço</strong> do anúncio: cada faixa de preço tem uma coluna na tabela.</li>
+      <li><strong>Reputação:</strong> a tabela abaixo é para MercadoLíder, reputação verde ou sem reputação, e já vem com o desconto de até 50% dessas reputações. Com reputação amarela, laranja ou vermelha o custo é maior.</li>
+      <li>Produtos <strong>novos</strong>. Usados têm outra regra.</li>
+    </ul>
+
+    <h3>Regras que entram na conta</h3>
+    <ul>
+      <li><strong>R$ 19 a R$ 78,99:</strong> o ML oferece frete grátis padrão e você paga o valor da tabela.</li>
+      <li><strong>A partir de R$ 79:</strong> você oferece frete grátis rápido, por isso as colunas daí em diante são mais caras.</li>
+      <li><strong>Abaixo de R$ 19:</strong> o custo é no máximo metade do preço do produto. O CalcML já aplica esse limite.</li>
+      <li><strong>Abaixo de R$ 79 com frete grátis rápido (opcional):</strong> se você escolher oferecer, paga o valor da coluna “R$ 79 a R$ 99,99”. O CalcML usa o frete padrão; se você oferece o rápido, desmarque o frete automático e digite o valor.</li>
+      <li><strong>Kits:</strong> paga um custo só por kit. Vender por quantidade (mais de uma unidade no mesmo pacote) também ajuda, porque o custo é do pacote.</li>
+    </ul>
+
+    <div class="box aviso"><strong>Atenção às medidas:</strong> o ML considera o peso <em>e</em> as medidas da caixa. Uma caixa grande e leve pode ser cobrada como se fosse mais pesada. Se o frete do detalhe da venda vier maior que o do CalcML, confira as medidas cadastradas no anúncio.</div>
+
+    <h3>Exceções</h3>
+    <p>Algumas categorias têm custo de envio diferente por causa do tipo de produto, e anúncios do Full Super têm tabela própria. Em casos raros o ML pode pedir que você ofereça envio com desconto em vez de frete grátis. Essas exceções estão na <a href="https://www.mercadolivre.com.br/ajuda/40538" target="_blank" rel="noopener">página de custos dos Envios</a>; nesses casos, digite o frete à mão no CalcML.</p>
+
+    <h3>Tabela completa usada pelo CalcML</h3>
+    <p class="legenda">Valores em R$ por venda. MercadoLíder, reputação verde ou sem reputação, produtos novos. Tabela de <span data-frete-data></span>. No celular, arraste a tabela para o lado.</p>
+    <div class="tabela-wrap"><table class="frete" id="tabelaFrete"></table></div>
+    <p class="legenda">* Abaixo de R$ 19 o custo é no máximo metade do preço do produto.</p>
+  </article>
+
+  <!-- 4 -->
+  <article id="imposto">
+    <h2>4. Imposto</h2>
+    <p>O campo de imposto é uma % sobre o <strong>preço de venda</strong>, igual à tarifa.</p>
+    <ul>
+      <li>No <strong>Simples Nacional</strong>, use a <strong>alíquota efetiva</strong> (a que você paga de fato no mês), não a alíquota da tabela da faixa. Ela muda conforme o faturamento dos últimos 12 meses.</li>
+      <li>MEI paga um valor fixo por mês; nesse caso dá para deixar o imposto em 0% e somar uma parte do valor mensal ao custo do produto.</li>
+      <li>Regras de ICMS, DIFAL e substituição tributária variam por estado e produto.</li>
+    </ul>
+    <div class="box aviso">O CalcML não sabe o seu regime de impostos. <strong>Confirme a % com o seu contador.</strong></div>
+  </article>
+
+  <!-- 5 -->
+  <article id="fora">
+    <h2>5. Custos que o CalcML não conta</h2>
+    <p>Para a margem ficar perto da real, lembre destes gastos e, quando fizer sentido, some uma parte deles ao custo do produto ou à embalagem:</p>
+    <ul>
+      <li><strong>Publicidade (Mercado Ads):</strong> o gasto com anúncios patrocinados não entra na tarifa.</li>
+      <li><strong>Devoluções e trocas:</strong> produto que volta danificado, frete de devolução em alguns casos e reclamações perdidas.</li>
+      <li><strong>Full:</strong> quem usa o Full pode pagar armazenagem e outros serviços do centro de distribuição, além do frete para levar o estoque até lá.</li>
+      <li><strong>Reputação:</strong> se a reputação cair, o frete fica mais caro que o da tabela.</li>
+      <li><strong>Custos da operação:</strong> etiquetas, fita, deslocamento até a agência, sistema de gestão, contador e o seu tempo.</li>
+      <li><strong>Antecipar o dinheiro</strong> no Mercado Pago pode ter custo.</li>
+    </ul>
+  </article>
+
+  <!-- 6 -->
+  <article id="conferir">
+    <h2>6. Como conferir uma venda</h2>
+    <ol>
+      <li>No Mercado Livre, abra <strong>Vendas</strong> e entre no <strong>detalhe da venda</strong>.</li>
+      <li>Lá aparecem a <strong>tarifa de venda</strong> e o <strong>custo de envio</strong> que foram descontados.</li>
+      <li>Abra o produto no CalcML com o mesmo preço e compare as linhas “Taxa ML” e “Frete ML”.</li>
+      <li>Se a tarifa não bater: veja se o tipo de anúncio (Clássico ou Premium) e a categoria são os mesmos do anúncio.</li>
+      <li>Se o frete não bater: confira o peso e as medidas cadastrados no anúncio, a sua reputação e se a categoria tem custo especial.</li>
+      <li>Na dúvida, o <a href="https://www.mercadolivre.com.br/simulador-de-custos" target="_blank" rel="noopener">simulador de custos</a> do ML é a referência oficial.</li>
+    </ol>
+  </article>
+
+  <!-- 7 -->
+  <article id="fontes">
+    <h2>7. Fontes e atualização</h2>
+    <ul>
+      <li><a href="https://www.mercadolivre.com.br/landing/custos-de-venda" target="_blank" rel="noopener">Custos de vender no Mercado Livre</a> (tarifas do Clássico e do Premium)</li>
+      <li><a href="https://www.mercadolivre.com.br/ajuda/51251" target="_blank" rel="noopener">Categorias com desconto na tarifa (R$ 150 a R$ 700)</a></li>
+      <li><a href="https://www.mercadolivre.com.br/ajuda/40538" target="_blank" rel="noopener">Custos dos Envios no Mercado Livre</a> (tabela de frete e exceções)</li>
+      <li><a href="https://www.mercadolivre.com.br/simulador-de-custos" target="_blank" rel="noopener">Simulador de custos</a></li>
+    </ul>
+    <p>A <strong>%</strong> vem ao vivo do Mercado Livre, então acompanha as mudanças sozinha. A <strong>tabela de frete</strong> é copiada da página oficial (versão de <span data-frete-data></span>). Quando o ML mudar a tabela, ela precisa ser atualizada no CalcML.</p>
+  </article>
+</main>
+
+<script>
+(function () {
+  const F = window.CALCML_FRETE;
+  const brl = n => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const num = n => n.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+  document.querySelectorAll('[data-frete-data]').forEach(el => { el.textContent = F.data; });
+
+  // Tabela de frete
+  const fim = i => F.faixas[i + 1] ? 'a ' + brl(F.faixas[i + 1] - 0.01) : '';
+  const cab = F.faixas.map((f, i) => {
+    if (i === 0) return 'Até ' + brl(F.faixas[1] - 0.01) + '*';
+    if (i === F.faixas.length - 1) return 'A partir de ' + brl(f);
+    return brl(f) + ' ' + fim(i);
+  });
+  const pesoTxt = i => {
+    const p = F.pesos[i], ant = i ? F.pesos[i - 1] : 0;
+    if (p === Infinity) return 'Mais de ' + num(ant) + ' kg';
+    return i === 0 ? 'Até ' + num(p) + ' kg' : num(ant) + ' a ' + num(p) + ' kg';
+  };
+  let h = '<thead><tr><th>Peso</th>' + cab.map(c => '<th>' + c + '</th>').join('') + '</tr></thead><tbody>';
+  F.tabela.forEach((linha, i) => {
+    h += '<tr><td>' + pesoTxt(i) + '</td>' + linha.map(v => '<td>' + brl(v) + '</td>').join('') + '</tr>';
+  });
+  document.getElementById('tabelaFrete').innerHTML = h + '</tbody>';
+
+  // Exemplo calculado com a mesma regra do app (menor preço que cai na própria faixa)
+  const custo = 20, emb = 2, peso = 0.3, taxa = 13, imp = 6, margem = 20;
+  const linha = F.pesos.findIndex(p => peso <= p);
+  const div = 1 - (taxa + imp + margem) / 100;
+  let preco = null, frete = 0;
+  for (let i = 0; i < F.faixas.length; i++) {
+    let fr = F.tabela[linha][i];
+    let p = (custo + emb + fr) / div;
+    if (i === 0) { // abaixo de R$ 19: frete no máximo metade do preço
+      const p2 = (custo + emb) / (div - 0.5);
+      if (div > 0.5 && fr > p2 / 2) { p = p2; fr = p2 / 2; }
+    }
+    const ini = F.faixas[i], prox = F.faixas[i + 1] ?? Infinity;
+    if (p >= ini && p < prox && (preco === null || p < preco)) { preco = p; frete = fr; }
+  }
+  const linhas = [
+    ['Custo do produto', custo], ['Embalagem', emb], ['Frete (tabela, ' + num(peso) + ' kg)', frete],
+    ['Tarifa ML (' + taxa + '%)', preco * taxa / 100], ['Imposto (' + imp + '%)', preco * imp / 100],
+    ['Lucro (' + margem + '% do preço)', preco * margem / 100]
+  ];
+  document.getElementById('exTabela').innerHTML =
+    linhas.map(([a, b]) => '<tr><td>' + a + '</td><td>' + brl(b) + '</td></tr>').join('') +
+    '<tr class="total"><td>Preço de venda</td><td>' + brl(preco) + '</td></tr>';
+})();
+</script>
+</body>
+</html>
