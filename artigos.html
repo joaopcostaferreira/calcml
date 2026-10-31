@@ -168,18 +168,15 @@ article li { margin: 4px 0; }
     <h3>Kits</h3>
     <p>Vender em kit não muda a %: a tarifa é a mesma da venda do produto separado (só que sobre o preço do kit).</p>
 
-    <h3>Como o CalcML pega a % ao vivo</h3>
-    <ul>
-      <li>Quando você escolhe a <strong>categoria do ML</strong> e deixa marcado “Pegar a % do ML pela categoria”, o CalcML pergunta ao próprio Mercado Livre, pela API oficial, qual é a tarifa daquela categoria <strong>naquele preço</strong> e naquele tipo de anúncio.</li>
-      <li>Como a % pode mudar com o preço (o desconto de R$ 150 a R$ 700, por exemplo) e o preço muda com a %, ele repete a pergunta até o preço parar de mudar.</li>
-      <li>A conexão com o ML é <strong>só de leitura</strong>: ela consulta a tarifa e mais nada. Não vê nem mexe em anúncios, vendas, mensagens ou dinheiro.</li>
-      <li>Cada resposta fica guardada por até 6 horas, para não perguntar a mesma coisa várias vezes.</li>
-      <li>Se o ML cobrar também um valor fixo por venda, ele aparece somado na linha “Taxa ML” do resultado.</li>
-      <li>Sem categoria escolhida (ou se o ML não responder), vale a % que você digitar no campo.</li>
-      <li>Ao abrir um produto salvo, a % é consultada de novo, então ela fica sempre com a tarifa de hoje.</li>
-    </ul>
-
-    <div class="box ok"><strong>Para conferir:</strong> abra o <a href="https://www.mercadolivre.com.br/simulador-de-custos" target="_blank" rel="noopener">simulador de custos do ML</a>, busque o mesmo produto ou categoria e coloque o mesmo preço. A % do simulador tem que bater com a do CalcML.</div>
+    <h3>Como achar a % do seu produto</h3>
+    <ol>
+      <li>No CalcML, busque a <strong>categoria do ML</strong> do produto. Ela aparece com o caminho completo (ex.: Celulares e Telefones › Acessórios › Capas).</li>
+      <li>Abra o <a href="https://www.mercadolivre.com.br/simulador-de-custos" target="_blank" rel="noopener">simulador de custos do ML</a> (tem o link logo abaixo do campo Taxa ML).</li>
+      <li>No simulador, busque o mesmo produto ou categoria e coloque um preço perto do preço sugerido pelo CalcML.</li>
+      <li>Copie a % do tipo de anúncio que você usa (Clássico ou Premium) e digite no campo <strong>Taxa ML (%)</strong>.</li>
+    </ol>
+    <div class="box aviso"><strong>Preço entre R$ 150 e R$ 700?</strong> Em algumas categorias a % cai nessa faixa. Se o preço sugerido mudar de faixa depois que você digitar a %, confira de novo no simulador com o preço novo.</div>
+    <p>A % fica salva junto com o produto. Quando o ML mudar as tarifas, abra o produto e atualize o número.</p>
   </article>
 
   <!-- 3 -->
@@ -263,7 +260,7 @@ article li { margin: 4px 0; }
       <li><a href="https://www.mercadolivre.com.br/ajuda/40538" target="_blank" rel="noopener">Custos dos Envios no Mercado Livre</a> (tabela de frete e exceções)</li>
       <li><a href="https://www.mercadolivre.com.br/simulador-de-custos" target="_blank" rel="noopener">Simulador de custos</a></li>
     </ul>
-    <p>A <strong>%</strong> vem ao vivo do Mercado Livre, então acompanha as mudanças sozinha. A <strong>tabela de frete</strong> é copiada da página oficial (versão de <span data-frete-data></span>). Quando o ML mudar a tabela, ela precisa ser atualizada no CalcML.</p>
+    <p>A <strong>%</strong> é a que você digita, conferida no simulador do ML. A <strong>tabela de frete</strong> é copiada da página oficial (versão de <span data-frete-data></span>). Quando o ML mudar a tabela, ela precisa ser atualizada no CalcML.</p>
   </article>
 </main>
 

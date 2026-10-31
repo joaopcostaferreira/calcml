@@ -112,6 +112,7 @@ a { color: var(--ml-blue); }
 .check { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-sec); margin: -4px 0 14px; cursor: pointer; line-height: 1.4; }
 .check input { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; accent-color: var(--ml-blue); }
 .hint { display: block; font-size: 11px; color: var(--text-muted); }
+.taxa-dica { font-size: 12px; color: var(--text-muted); margin: -6px 0 14px; }
 
 .alert { padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 16px; display: none; }
 .alert.error { background: var(--red-bg); color: var(--red); }
@@ -334,7 +335,7 @@ a { color: var(--ml-blue); }
             <div class="field"><label>Tipo de anúncio</label><select id="c_tipo" onchange="onForm('c')"><option value="classico">Clássico</option><option value="premium">Premium</option></select></div>
             <div class="field"><label>Taxa ML (%)</label><input type="number" id="c_taxa" value="16" step="0.01" min="0" oninput="onForm('c')"></div>
           </div>
-          <label class="check"><input type="checkbox" id="c_taxa_auto" checked onchange="onForm('c')"><span>Pegar a % do ML pela categoria (ao vivo)<span class="hint" id="c_taxa_hint"></span></span></label>
+          <p class="taxa-dica">Ache a % da sua categoria no <a href="https://www.mercadolivre.com.br/simulador-de-custos" target="_blank" rel="noopener">simulador de custos do ML ↗</a> e digite em Taxa ML.</p>
           <div class="form-grid">
             <div class="field"><label>Imposto (%)</label><input type="number" id="c_imp" value="5" step="0.1" min="0" oninput="onForm('c')"></div>
             <div class="field"><label>Margem desejada (%)</label><input type="number" id="c_margem" value="15" step="0.1" oninput="onForm('c')"></div>
@@ -416,7 +417,7 @@ a { color: var(--ml-blue); }
             <div class="field"><label>Tipo de anúncio</label><select id="new_tipo" onchange="onForm('new')"><option value="classico">Clássico</option><option value="premium">Premium</option></select></div>
             <div class="field"><label>Taxa ML (%)</label><input type="number" id="new_taxa" value="16" step="0.01" min="0" oninput="onForm('new')"></div>
           </div>
-          <label class="check"><input type="checkbox" id="new_taxa_auto" checked onchange="onForm('new')"><span>Pegar a % do ML pela categoria (ao vivo)<span class="hint" id="new_taxa_hint"></span></span></label>
+          <p class="taxa-dica">Ache a % da sua categoria no <a href="https://www.mercadolivre.com.br/simulador-de-custos" target="_blank" rel="noopener">simulador de custos do ML ↗</a> e digite em Taxa ML.</p>
           <div class="form-grid">
             <div class="field"><label>Imposto (%)</label><input type="number" id="new_imp" value="5" step="0.1" min="0" oninput="onForm('new')"></div>
             <div class="field"><label>Margem desejada (%)</label><input type="number" id="new_margem" value="15" step="0.1" oninput="onForm('new')"></div>
@@ -461,7 +462,7 @@ a { color: var(--ml-blue); }
               <div class="field"><label>Tipo de anúncio</label><select id="pd_tipo" onchange="onForm('pd')"><option value="classico">Clássico</option><option value="premium">Premium</option></select></div>
               <div class="field"><label>Taxa ML (%)</label><input type="number" id="pd_taxa" step="0.01" min="0" oninput="onForm('pd')"></div>
             </div>
-            <label class="check"><input type="checkbox" id="pd_taxa_auto" onchange="onForm('pd')"><span>Pegar a % do ML pela categoria (ao vivo)<span class="hint" id="pd_taxa_hint"></span></span></label>
+            <p class="taxa-dica">Ache a % da sua categoria no <a href="https://www.mercadolivre.com.br/simulador-de-custos" target="_blank" rel="noopener">simulador de custos do ML ↗</a> e digite em Taxa ML.</p>
             <div class="form-grid">
               <div class="field"><label>Imposto (%)</label><input type="number" id="pd_imp" step="0.1" min="0" oninput="onForm('pd')"></div>
               <div class="field"><label>Margem (%)</label><input type="number" id="pd_margem" step="0.1" oninput="onForm('pd')"></div>
@@ -577,32 +578,30 @@ function freteTabela(peso, preco) {
 // ============================================================
 // CALC ENGINE
 // ============================================================
-// d = { custo, emb, frete, freteAuto, peso, taxa, fixa (taxa fixa do ML por venda, se houver), imp, margem, qtd }
+// d = { custo, emb, frete, freteAuto, peso, taxa, imp, margem, qtd }
 function num(id) { const el = $(id); if (!el) return 0; const n = parseFloat(el.value); return isFinite(n) ? n : 0; }
 function readForm(p) {
   const auto = $(p + '_frete_auto');
   return { custo: num(p + '_custo'), emb: num(p + '_emb'), frete: num(p + '_frete'), freteAuto: !!(auto && auto.checked),
-    peso: num(p + '_peso'), taxa: num(p + '_taxa'), imp: num(p + '_imp'), margem: num(p + '_margem'), qtd: num(p + '_qtd'),
-    taxaAuto: taxaAutoOn(p), fixa: taxaAutoOn(p) ? (taxaFixa[p] || 0) : 0 };
+    peso: num(p + '_peso'), taxa: num(p + '_taxa'), imp: num(p + '_imp'), margem: num(p + '_margem'), qtd: num(p + '_qtd') };
 }
 function fromProduct(p) {
   return { custo: +p.custo || 0, emb: +p.embalagem || 0, frete: +p.frete || 0, freteAuto: !!p.frete_auto, peso: +p.peso || 0,
-    taxa: +p.taxa_ml || 0, imp: +p.imposto || 0, margem: +p.margem || 0, qtd: +p.qtd_vendas || 0,
-    fixa: p.taxa_auto ? (+p.taxa_fixa || 0) : 0 };
+    taxa: +p.taxa_ml || 0, imp: +p.imposto || 0, margem: +p.margem || 0, qtd: +p.qtd_vendas || 0 };
 }
 
 // Resultado completo para um preço de venda conhecido
 function resultado(preco, d, frete) {
-  const taxaVal = preco * d.taxa / 100 + (d.fixa || 0), impVal = preco * d.imp / 100;
+  const taxaVal = preco * d.taxa / 100, impVal = preco * d.imp / 100;
   const lucro = preco - taxaVal - impVal - frete - d.custo - d.emb;
-  return { preco, custo: d.custo, emb: d.emb, frete, taxaVal, impVal, lucroItem: lucro, margem: preco > 0 ? lucro / preco : 0, freteAuto: d.freteAuto, peso: d.peso, taxaPct: d.taxa, fixa: d.fixa || 0 };
+  return { preco, custo: d.custo, emb: d.emb, frete, taxaVal, impVal, lucroItem: lucro, margem: preco > 0 ? lucro / preco : 0, freteAuto: d.freteAuto, peso: d.peso, taxaPct: d.taxa };
 }
 
 // Preço de venda para atingir a margem desejada
 function calcPrice(d) {
   const denom = 1 - d.taxa / 100 - d.imp / 100 - d.margem / 100;
   if (denom <= 0) return null;
-  const base = d.custo + d.emb + (d.fixa || 0);
+  const base = d.custo + d.emb;
   if (!d.freteAuto) return resultado((base + d.frete) / denom, d, d.frete);
 
   // O frete depende da faixa de preço, e o preço depende do frete:
@@ -640,7 +639,7 @@ function buildDecomp(el, r) {
   if (!r) { el.innerHTML = '<div style="color:var(--text-muted);font-size:13px">Margem impossível — taxa + imposto + margem chegam a 100% ou mais.</div>'; return; }
   const freteLabel = r.freteAuto ? `Frete ML<small>tabela ML · ${pesoTxt(r.peso)} · ${faixaTxt(r.preco)}</small>` : 'Frete ML';
   const rows = [['Custo produto', fmt(r.custo)], [freteLabel, fmt(r.frete)], ['Embalagem', fmt(r.emb)],
-    ['Taxa ML (' + pctNum(r.taxaPct) + '%' + (r.fixa ? ' + ' + fmt(r.fixa) : '') + ')', fmt(r.taxaVal)],
+    ['Taxa ML (' + pctNum(r.taxaPct) + '%)', fmt(r.taxaVal)],
     ['Imposto (' + pct(r.impVal / r.preco) + ')', fmt(r.impVal)],
     ['Lucro (' + pct(r.margem) + ')', fmt(r.lucroItem)]];
   el.innerHTML = rows.map(([l, v]) => `<div class="summary-row"><span class="sr-label">${l}</span><span class="sr-val">${v}</span></div>`).join('') +
@@ -694,101 +693,11 @@ function calcReverse() {
 }
 
 // ============================================================
-// TARIFA DO ML AO VIVO — pergunta ao intermediário (Google Apps Script do usuário),
-// que consulta a API oficial do ML (listing_prices). Ele só lê a tarifa.
-// Código do intermediário: apps-script/Codigo.gs
+// FORMULÁRIOS — qualquer mudança recalcula na hora
 // ============================================================
-const ML_PROXY = 'https://script.google.com/macros/s/AKfycbztZcp8lYl5ZPIlGg9yHtA2z5i7s7s5vsg-yY9H1jnVMSu9Qy8C-yBoYvitWUnlr5SS/exec';
-const taxaFixa = { c: 0, new: 0, pd: 0 };
-const taxaFalhou = { c: false, new: false, pd: false }; // ML não respondeu: o campo fica livre para digitar
-const taxaSeq = { c: 0, new: 0, pd: 0 };
-const taxaTimer = {};
-const taxaCache = new Map();
-const TIPO_NOME = { classico: 'Clássico', premium: 'Premium' };
 const pctNum = n => String(+(+n).toFixed(2)).replace('.', ',');
-
-function taxaAutoOn(p) { const el = $(p + '_taxa_auto'); return !!(el && el.checked && catSel[p]); }
-
 function recalc(p) { if (p === 'c') calcQuick(); else if (p === 'new') calcNew(); else if (p === 'pd') liveDetailCalc(); }
-
-// Qualquer mudança num formulário: recalcula na hora e, se a % for automática, consulta o ML
-function onForm(p) {
-  syncTaxaCampo(p);
-  recalc(p);
-  agendarTaxa(p);
-}
-
-// Campo de taxa: travado (azul) quando a % vem do ML
-function syncTaxaCampo(p) {
-  const el = $(p + '_taxa'); if (!el || !$(p + '_taxa_auto')) return;
-  const auto = taxaAutoOn(p);
-  const travar = auto && !taxaFalhou[p];
-  el.readOnly = travar; el.classList.toggle('auto', travar);
-  if (!travar) taxaFixa[p] = 0;
-  const hint = $(p + '_taxa_hint');
-  if (!$(p + '_taxa_auto').checked) hint.textContent = '';
-  else if (!catSel[p]) hint.textContent = 'Escolha a categoria do ML acima para a % vir sozinha.';
-}
-
-function agendarTaxa(p) {
-  if (!taxaAutoOn(p)) return;
-  clearTimeout(taxaTimer[p]);
-  taxaTimer[p] = setTimeout(() => atualizarTaxa(p), 500);
-}
-
-function buscarTaxa(cat, preco) {
-  const k = cat + '|' + preco.toFixed(2);
-  if (!taxaCache.has(k)) {
-    const pr = fetch(ML_PROXY + '?categoria=' + encodeURIComponent(cat) + '&preco=' + preco.toFixed(2))
-      .then(r => r.json())
-      .then(j => { if (j.erro) throw new Error(j.erro); return j; });
-    taxaCache.set(k, pr);
-    pr.catch(() => taxaCache.delete(k));
-  }
-  return taxaCache.get(k);
-}
-
-async function atualizarTaxa(p) {
-  const hint = $(p + '_taxa_hint'), c = catSel[p];
-  if (!taxaAutoOn(p)) return;
-  const seq = ++taxaSeq[p];
-  const tipo = $(p + '_tipo').value;
-  hint.textContent = 'Consultando a tarifa no Mercado Livre...';
-  try {
-    let ultimo = null, info = null;
-    // A % pode mudar com o preço (ex.: desconto entre R$ 150 e R$ 700) e o preço muda com a %:
-    // repete até o preço parar de mudar.
-    for (let i = 0; i < 4; i++) {
-      const r = calcPrice(readForm(p));
-      if (!r) break;
-      const preco = Math.round(r.preco * 100) / 100;
-      if (ultimo !== null && Math.abs(preco - ultimo) < 0.01) break;
-      ultimo = preco;
-      const j = await buscarTaxa(c.id, preco);
-      if (seq !== taxaSeq[p]) return;   // mudou algo no meio: vale a consulta mais nova
-      const t = j.tipos && j.tipos[tipo];
-      if (!t) throw new Error('sem_tipo');
-      const fixa = +t.fixa || 0;
-      const pctV = t.pct != null ? +t.pct : (+t.total - fixa) / preco * 100;
-      $(p + '_taxa').value = +pctV.toFixed(2);
-      taxaFixa[p] = fixa;
-      if (taxaFalhou[p]) { taxaFalhou[p] = false; syncTaxaCampo(p); }
-      info = { pct: pctV, fixa, preco };
-      recalc(p);
-    }
-    if (!info) { hint.textContent = 'Margem impossível com esses números.'; return; }
-    hint.textContent = `Tarifa ${TIPO_NOME[tipo]} do ML agora: ${pctNum(info.pct)}%` +
-      (info.fixa ? ` + ${fmt(info.fixa)} por venda` : '') + ` (para venda de ${fmt(info.preco)}).`;
-  } catch (e) {
-    if (seq !== taxaSeq[p]) return;
-    console.error('Tarifa ML:', e);
-    taxaFalhou[p] = true; syncTaxaCampo(p); recalc(p);
-    hint.textContent = e.message === 'nao_conectado'
-      ? 'A % automática ainda não está conectada ao ML. Usando a % do campo.'
-      : e.message === 'sem_tipo' ? 'O ML não devolveu esse tipo de anúncio para a categoria.'
-      : 'Não consegui consultar o ML agora. Usando a % do campo.';
-  }
-}
+function onForm(p) { recalc(p); }
 
 // ============================================================
 // CATEGORIA DO ML — busca pública da API do Mercado Livre
@@ -988,7 +897,7 @@ function productFields(p, name) {
   return {
     name, custo: d.custo, embalagem: d.emb, taxa_ml: d.taxa, imposto: d.imp, margem: d.margem, qtd_vendas: d.qtd,
     peso: d.peso, frete_auto: d.freteAuto,
-    tipo: $(p + '_tipo').value === 'premium' ? 'premium' : 'classico', taxa_auto: $(p + '_taxa_auto').checked, taxa_fixa: d.fixa,
+    tipo: $(p + '_tipo').value === 'premium' ? 'premium' : 'classico',
     frete: d.freteAuto && r ? Math.round(r.frete * 100) / 100 : d.frete,
     categoria: c ? c.name : '', categoria_id: c ? c.id : '', categoria_path: c ? c.path : ''
   };
@@ -1091,18 +1000,13 @@ function openDetail(id) {
   $('pd_frete_auto').checked = !!p.frete_auto;
   $('pd_taxa').value = p.taxa_ml ?? 0;
   $('pd_tipo').value = p.tipo === 'premium' ? 'premium' : 'classico';
-  $('pd_taxa_auto').checked = !!p.taxa_auto;
-  taxaFixa.pd = +p.taxa_fixa || 0;
   $('pd_imp').value = p.imposto ?? 0;
   $('pd_margem').value = p.margem ?? 0;
   $('pd_qtd').value = p.qtd_vendas ?? 0;
   catSel.pd = p.categoria_id ? { id: p.categoria_id, name: p.categoria || '', path: p.categoria_path || '' } : null;
   $('pd_cat_res').innerHTML = ''; $('pd_cat_q').value = '';
   renderCat('pd');
-  syncTaxaCampo('pd');
-  if (taxaAutoOn('pd')) taxaFixa.pd = +p.taxa_fixa || 0;
   liveDetailCalc();
-  agendarTaxa('pd');   // atualiza a % salva com a tarifa de hoje
   window.scrollTo({ top: 0 });
 }
 
@@ -1145,7 +1049,6 @@ async function init() {
   // Tema: acerta os botões 🌙/☀️ e redesenha o gráfico ao trocar
   CALCML_TEMA.aplicar(CALCML_TEMA.atual());
   document.addEventListener('calcml-tema', () => { if ($('dashboard').style.display === 'block') updateDashboard(); });
-  ['c', 'new', 'pd'].forEach(syncTaxaCampo);
 
   document.querySelectorAll('[data-frete-hint]').forEach(e =>
     e.textContent = 'Reputação verde, MercadoLíder ou sem reputação · tabela de ' + FRETE_TABELA_DATA + '. O ML também considera as medidas da caixa.');
